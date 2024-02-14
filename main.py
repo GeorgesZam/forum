@@ -5,14 +5,15 @@ import datetime
 # Chemin vers le fichier CSV où les messages seront stockés
 FILE_PATH = 'messages.csv'
 
-# Fonction pour charger les messages depuis le fichier CSV
 def load_messages():
-    try:
+    # Vérifie si le fichier existe et contient des données
+    if os.path.exists(FILE_PATH) and os.path.getsize(FILE_PATH) > 0:
         messages = pd.read_csv(FILE_PATH)
-    except FileNotFoundError:
-        # Si le fichier n'existe pas, on crée un DataFrame vide
+    else:
+        # Si le fichier n'existe pas ou est vide, créez un DataFrame vide avec les colonnes appropriées
         messages = pd.DataFrame(columns=['date', 'user', 'message'])
     return messages
+
 
 # Fonction pour sauvegarder un nouveau message dans le fichier CSV
 def save_message(user, message):
