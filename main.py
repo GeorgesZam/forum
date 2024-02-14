@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import os  # Importez le module os
 
 # Chemin vers le fichier CSV où les messages seront stockés
 FILE_PATH = 'messages.csv'
@@ -13,7 +14,6 @@ def load_messages():
         # Si le fichier n'existe pas ou est vide, créez un DataFrame vide avec les colonnes appropriées
         messages = pd.DataFrame(columns=['date', 'user', 'message'])
     return messages
-
 
 # Fonction pour sauvegarder un nouveau message dans le fichier CSV
 def save_message(user, message):
