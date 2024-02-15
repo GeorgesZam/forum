@@ -36,4 +36,4 @@ if st.button('Poster'):
 messages = load_messages()
 if not messages.empty:
     for idx, row in messages.iterrows():
-        st.write(f"{row['date']} - {row['user']}: {row['message']}")
+        st.write(f"{row['user']}: {row['message']}")
