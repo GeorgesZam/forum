@@ -1,35 +1,40 @@
 import streamlit as st
 import pandas as pd
+import datetime
 import os
 
-# Chemin vers le fichier CSV pour stocker les messages et les liens vidéo
-CSV_FILE = 'messages.csv'
+# Chemin vers le fichier CSV où les messages et les liens vidéo seront stockés
+FILE_PATH = 'messages.csv'
 
-# Fonction pour charger ou initialiser le fichier CSV
-def load_or_initialize_csv(csv_file):
-    if os.path.exists(csv_file):
-        return pd.read_csv(csv_file)
+def load_messages():
+    if os.path.exists(FILE_PATH) and os.path.getsize(FILE_PATH) > 0:
+        messages = pd.read_csv(FILE_PATH)
     else:
-        return pd.DataFrame(columns=['Message', 'VideoLink'])
+        messages = pd.DataFrame(columns=['date', 'user', 'message', 'video_link'])
+    return messages
 
-# Charger ou initialiser le DataFrame
-df = load_or_initialize_csv(CSV_FILE)
+def save_message(user, message, video_link):
+    messages = load_messages()
+    new_message = pd.DataFrame([[datetime.datetime.now(), user, message, video_link]],
+                               columns=['date', 'user', 'message', 'video_link'])
+    messages = pd.concat([messages, new_message], ignore_index=True)
+    messages.to_csv(FILE_PATH, index=False)
 
-# Interface utilisateur pour ajouter un nouveau message
-st.title("Forum avec Streamlit")
-message = st.text_area("Laissez votre message ici:")
-video_link = st.text_input("Lien vidéo (optionnel):")
-if st.button("Poster"):
-    # Ajouter le nouveau message et le lien vidéo au DataFrame
-    new_data = {'Message': message, 'VideoLink': video_link}
-    df = df.append(new_data, ignore_index=True)
-    # Sauvegarder le DataFrame mis à jour dans le fichier CSV
-    df.to_csv(CSV_FILE, index=False)
+# Interface utilisateur
+st.title('Forum de Discussion')
+
+user = st.text_input('Votre nom')
+message = st.text_area('Votre message')
+video_link = st.text_input('Lien vidéo (optionnel)')
+
+if st.button('Poster'):
+    save_message(user, message, video_link)
     st.success("Message posté avec succès!")
 
-# Afficher les messages existants
-st.write("Messages:")
-for index, row in df.iterrows():
-    st.write(f"Message {index + 1}: {row['Message']}")
-    if row['VideoLink']:
-        st.video(row['VideoLink'])
+# Afficher les messages et les vidéos
+messages = load_messages()
+if not messages.empty:
+    for idx, row in messages.iterrows():
+        st.write(f"{row['date']} - {row['user']}: {row['message']}")
+        if row['video_link']:  # Vérifie si un lien vidéo est présent
+            st.video(row['video_link'])  # Affiche la vidéo
