@@ -1,49 +1,35 @@
 import streamlit as st
 import pandas as pd
-import datetime
 import os
-import uuid
 
-# Chemin vers le dossier où les fichiers seront stockés
-FILE_PATH = 'messages.csv'
-UPLOAD_FOLDER = 'uploaded_files/'
+# Chemin vers le fichier CSV pour stocker les messages et les liens vidéo
+CSV_FILE = 'messages.csv'
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
-def load_messages():
-    if os.path.exists(FILE_PATH) and os.path.getsize(FILE_PATH) > 0:
-        messages = pd.read_csv(FILE_PATH)
+# Fonction pour charger ou initialiser le fichier CSV
+def load_or_initialize_csv(csv_file):
+    if os.path.exists(csv_file):
+        return pd.read_csv(csv_file)
     else:
-        messages = pd.DataFrame(columns=['date', 'user', 'message', 'image_path'])
-    return messages
+        return pd.DataFrame(columns=['Message', 'VideoLink'])
 
-def save_message(user, message, image_file=None):
-    messages = load_messages()
-    image_path = ""
-    if image_file is not None:
-        # Générer un nom de fichier unique
-        filename = f"{uuid.uuid4()}{os.path.splitext(image_file.name)[1]}"
-        image_path = os.path.join(UPLOAD_FOLDER, filename)
-        with open(image_path, "wb") as f:
-            f.write(image_file.getbuffer())
-    new_message = pd.DataFrame([[datetime.datetime.now(), user, message, image_path]],
-                               columns=['date', 'user', 'message', 'image_path'])
-    messages = pd.concat([messages, new_message], ignore_index=True)
-    messages.to_csv(FILE_PATH, index=False)
+# Charger ou initialiser le DataFrame
+df = load_or_initialize_csv(CSV_FILE)
 
-st.title('Forum de Discussion')
+# Interface utilisateur pour ajouter un nouveau message
+st.title("Forum avec Streamlit")
+message = st.text_area("Laissez votre message ici:")
+video_link = st.text_input("Lien vidéo (optionnel):")
+if st.button("Poster"):
+    # Ajouter le nouveau message et le lien vidéo au DataFrame
+    new_data = {'Message': message, 'VideoLink': video_link}
+    df = df.append(new_data, ignore_index=True)
+    # Sauvegarder le DataFrame mis à jour dans le fichier CSV
+    df.to_csv(CSV_FILE, index=False)
+    st.success("Message posté avec succès!")
 
-user = st.text_input('Votre nom')
-message = st.text_area('Votre message')
-image_file = st.file_uploader("Téléchargez une image", type=['jpg', 'png'])
-
-if st.button('Poster'):
-    save_message(user, message, image_file)
-
-messages = load_messages()
-if not messages.empty:
-    for idx, row in messages.iterrows():
-        st.write(f"{row['user']}: {row['message']}")
-        if row['image_path']:
-            st.image(row['image_path'])
+# Afficher les messages existants
+st.write("Messages:")
+for index, row in df.iterrows():
+    st.write(f"Message {index + 1}: {row['Message']}")
+    if row['VideoLink']:
+        st.video(row['VideoLink'])
