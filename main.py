@@ -43,7 +43,7 @@ if not messages.empty:
                 st.video(video_url)
             except Exception as e:
                 st.error(f"Erreur lors de l'affichage de la vidéo à partir de {video_url}: {e}")
-
+ 
 # Interface utilisateur pour ajouter un nouveau message
 user = st.text_input('Votre nom')
 message = st.text_area('Votre message')
