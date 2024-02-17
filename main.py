@@ -13,16 +13,31 @@ def load_messages():
         messages = pd.DataFrame(columns=['date', 'user', 'message', 'video_link'])
     return messages
 
+def save_messages(messages):
+    messages.to_csv(FILE_PATH, index=False)
+
 def save_message(user, message, video_link):
     messages = load_messages()
     new_message = pd.DataFrame([[datetime.datetime.now(), user, message, video_link]],
                                columns=['date', 'user', 'message', 'video_link'])
     messages = pd.concat([messages, new_message], ignore_index=True)
-    messages.to_csv(FILE_PATH, index=False)
+    save_messages(messages)
 
-# Interface utilisateur
+def delete_message(index):
+    messages = load_messages()
+    messages = messages.drop(index).reset_index(drop=True)
+    save_messages(messages)
+
+# Afficher les messages existants
 st.title('Forum de Discussion')
+messages = load_messages()
+if not messages.empty:
+    for idx, row in messages.iterrows():
+        st.write(f"{row['date']} - {row['user']}: {row['message']}")
+        if row['video_link']:  # Vérifie si un lien vidéo est présent
+            st.video(row['video_link'])  # Affiche la vidéo
 
+# Interface utilisateur pour ajouter un nouveau message
 user = st.text_input('Votre nom')
 message = st.text_area('Votre message')
 video_link = st.text_input('Lien vidéo (optionnel)')
@@ -30,11 +45,11 @@ video_link = st.text_input('Lien vidéo (optionnel)')
 if st.button('Poster'):
     save_message(user, message, video_link)
     st.success("Message posté avec succès!")
+    st.experimental_rerun()
 
-# Afficher les messages et les vidéos
-messages = load_messages()
+# Option pour supprimer un message
 if not messages.empty:
-    for idx, row in messages.iterrows():
-        st.write(f"{row['date']} - {row['user']}: {row['message']}")
-        if row['video_link']:  # Vérifie si un lien vidéo est présent
-            st.video(row['video_link'])  # Affiche la vidéo
+    message_to_delete = st.selectbox('Sélectionnez un message à supprimer:', messages.index)
+    if st.button('Supprimer le message'):
+        delete_message(message_to_delete)
+        st.experimental_rerun()
