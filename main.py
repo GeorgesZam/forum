@@ -38,10 +38,11 @@ if not messages.empty:
         st.write(f"{row['date']} - {row['user']}: {row['message']}")
         # Vérifiez si un lien vidéo est présent et non vide avant de l'afficher
         if pd.notnull(row['video_link']) and row['video_link'].strip():
+            video_url = row['video_link'].strip()
             try:
-                st.video(row['video_link'])
+                st.video(video_url)
             except Exception as e:
-                st.error("Erreur lors de l'affichage de la vidéo. Veuillez vérifier le lien.")
+                st.error(f"Erreur lors de l'affichage de la vidéo à partir de {video_url}: {e}")
 
 # Interface utilisateur pour ajouter un nouveau message
 user = st.text_input('Votre nom')
@@ -53,8 +54,6 @@ if st.button('Poster'):
         save_message(user, message, video_link)
         st.success("Message posté avec succès!")
         st.experimental_rerun()
-    else:
-        st.error("Veuillez remplir à la fois votre nom et votre message.")
 
 # Option pour supprimer un message
 if not messages.empty:
