@@ -18,9 +18,9 @@ def save_messages(messages):
 
 def save_message(user, message, video_link):
     messages = load_messages()
-    # Assurez-vous que video_link est une chaîne vide si None est fourni
-    video_link = video_link if video_link is not None else ""
-    new_message = pd.DataFrame([[datetime.datetime.now(), user, message, video_link]],
+    # Formatage de la date pour exclure les informations plus petites que la seconde
+    formatted_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_message = pd.DataFrame([[formatted_date, user, message, video_link]],
                                columns=['date', 'user', 'message', 'video_link'])
     messages = pd.concat([messages, new_message], ignore_index=True)
     save_messages(messages)
